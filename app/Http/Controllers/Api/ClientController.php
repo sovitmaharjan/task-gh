@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 class ClientController extends Controller
 {
     protected $filename = 'file.csv';
-
+    
     public function index()
     {
         $filePath = storage_path('app/' . $this->filename);
@@ -20,15 +20,15 @@ class ClientController extends Controller
             $data[] = $row;
         }
         fclose($file);
-        return $data;
+        return responseSuccess($data, 'Clients');
     }
-
+    
     public function store()
     {
         $data = ['apple', '800'];
         $file = fopen(storage_path('app/' . $this->filename), 'a');
         fputcsv($file, $data);
         fclose($file);
-        return $data;
+        return responseSuccess($data, 'Client has been created.');
     }
 }
