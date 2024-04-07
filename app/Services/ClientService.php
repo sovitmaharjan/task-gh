@@ -2,58 +2,44 @@
 
 namespace App\Services;
 
-class ClientService
-{
-    protected static $columns = ["id", "name", "gender", "phone", "email", "address", "nationality", "dob", "contact_mode", "created_at", "updated_at"];
+use App\Services\BaseService;
+use App\Services\EducationBackgroundService;
 
-    /**
-     * get list data
-     *
-     * @param string $filePath path of the file
-     * @param string $mode mode to opent the file. eg: 'w', 'r'
-     *
-     * @return array
-     */
-    public function list(string $filePath, string $mode): array
+class ClientService extends BaseService
+{
+    const MALE = "male";
+    const FEMALE = "female";
+    const OTHER = "other";
+    const EMAIL = "email";
+    const PHONE = "phone";
+
+    protected $educationBackground;
+
+    public function __construct()
     {
-        $result  = [];
-        if (!file_exists($filePath)) {
-            $file = fopen($filePath, WRITE);
-        } else {
-            $file = fopen($filePath, $mode);
-            while ($row = fgetcsv($file)) {
-                $result[] = makeAssoc($row, static::$columns);
-            }
+        parent::__construct(
+            storage_path('app/client.csv'),
+            ["id", "name", "gender", "phone", "email", "address", "nationality", "dob", "contact_mode", "created_at", "updated_at"]
+        );
+        $this->educationBackground = new EducationBackgroundService();
+    }
+
+    public function store($data): array
+    {
+        $result = parent::store($data);
+        foreach ($data['education_background'] as $item) {
+            $item['client_id'] = $result['id'];
+            $this->educationBackground->store($item);
         }
-        fclose($file);
         return $result;
     }
 
-    /**
-     * store data
-     *
-     * @param string $filePath path of the file
-     * @param string $mode mode to opent the file. eg: 'w', 'r'
-     * @param array $data set of data to save
-     *
-     * @return array
-     */
-    public function store(string $filePath, string $mode, array $data): array
+    public function educationBackground($clientId)
     {
-        $file = file_exists($filePath) ? fopen($filePath, $mode) : fopen($filePath, WRITE);
-        $count = count(file($filePath));
-        $id = $count + 1;
-        array_unshift($data, $id); // added id for each row
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        // dd(
-        //     $count,
-        //     file($filePath)
-        //     // array_map('str_getcsv', file($filePath, FILE_IGNORE_NEW_LINES))
-        //     // array_map('str_getcsv', $file)
-        // );
-        fputcsv($file, $data);
-        fclose($file);
-        return $data;
+        $ebArr = $this->educationBackground->list();
+        $result = array_filter($ebArr, function ($item) use ($clientId) {
+            return $item['client_id'] == $clientId;
+        });
+        return $result;
     }
 }

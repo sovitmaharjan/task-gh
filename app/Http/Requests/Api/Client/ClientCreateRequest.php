@@ -30,9 +30,9 @@ class ClientCreateRequest extends FormRequest
             "address" => "required|string",
             "nationality" => "required|string",
             "dob" => "required|date",
-            // "education_background" => "required|array",
-            // "education_background.*.level" => "required|string",
-            // "education_background.*.graduated_year" => "required|string",
+            "education_background" => "required|array",
+            "education_background.*.level" => "required|string",
+            "education_background.*.graduated_year" => "required|string",
             "contact_mode" => ["nullable", Rule::in(EMAIL, PHONE)],
         ];
     }

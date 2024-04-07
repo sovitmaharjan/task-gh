@@ -20,13 +20,13 @@ function responseError(string $msg, int $code = 400)
 /**
  * Generates success response
  *
- * @param array $data list/single data
+ * @param array|object $data list/single data
  * @param string $msg The success message
  * @param int $code The HTTP code, default: 200
  *
  * @return Illuminate\Http\JsonResponse
  */
-function responseSuccess(array $data = [], string $msg = "", int $code = 200)
+function responseSuccess(array|object $data = [], string $msg = "", int $code = 200)
 {
     return response([
         "status" => "success",
