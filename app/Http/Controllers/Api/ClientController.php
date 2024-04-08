@@ -18,8 +18,9 @@ class ClientController extends Controller
         $this->clientService = $clientService;
     }
 
-    public function index(IndexRequest $request)
+    public function index()
     {
+        app(IndexRequest::class);    
         $clients = $this->clientService->list();
         return responseSuccess(new ClientListResource($clients), 'Clients');
     }

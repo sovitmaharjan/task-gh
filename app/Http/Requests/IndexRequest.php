@@ -23,7 +23,7 @@ class IndexRequest extends FormRequest
     {
         return [
             'page' => 'nullable|required_with:per_page',
-            'per_page' => 'nullable|required_with:page',
+            'per_page' => 'nullable',
         ];
     }
 }

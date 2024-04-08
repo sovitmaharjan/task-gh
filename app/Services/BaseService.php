@@ -73,25 +73,16 @@ class BaseService
      */
     public function list(): array
     {
-        $result  = [];
+        $result["data"]  = [];
         if (!file_exists($this->filePath)) {
             $file = fopen($this->filePath, "w");
         } else {
             $file = fopen($this->filePath, "r");
             if (request()->paginate == 1 || request()->page > 0) {
-                $perPage = request()->per_page ?? 10;
-                $page = request()->page ?? 1;
-                $offset = ($perPage * $page) - $perPage;
-                $count = 1;
-                while ($row = fgetcsv($file)) {
-                    if ($count > $offset && $count <= $perPage * $page) {
-                        $result[] = $this->makeAssoc($row, $this->columns);
-                    }
-                    $count++;
-                }
+                $result = $this->paginate($file);
             }
             while ($row = fgetcsv($file)) {
-                $result[] = $this->makeAssoc($row, $this->columns);
+                $result["data"][] = $this->makeAssoc($row, $this->columns);
             }
         }
         fclose($file);
@@ -101,7 +92,7 @@ class BaseService
     /**
      * store data
      *
-     * @param string $mode mode to opent the file. eg: 'w', 'r'
+     * @param string $mode mode to opent the file. eg: "w", "r"
      * @param array $data set of data to save
      *
      * @return array
@@ -109,15 +100,45 @@ class BaseService
     public function store(array $data): array
     {
         $file = file_exists($this->filePath) ? fopen($this->filePath, "a") : fopen($this->filePath, "w");
-        $count = count(file($this->filePath));
+        $count = $this->total();
         $id = $count + 1;
-        $data = array_merge(['id' => $id], $data, [
-            'created_at' => now(),
-            'updated_at' => now(),
+        $data = array_merge(["id" => $id], $data, [
+            "created_at" => now(),
+            "updated_at" => now(),
         ]);
         $data = $this->filterColumn($data, $this->columns);
         fputcsv($file, $data);
         fclose($file);
         return $data;
+    }
+
+    protected function paginate($file)
+    {
+        $result["data"] = [];
+        $perPage = request()->per_page ?? 10;
+        $page = request()->page ?? 1;
+        $offset = ($perPage * $page) - $perPage;
+        $count = 1;
+        while ($row = fgetcsv($file)) {
+            if ($count > $offset && $count <= $perPage * $page) {
+                $result["data"][] = $this->makeAssoc($row, $this->columns);
+            }
+            $count++;
+        }
+        $total = $this->total();
+        $rounded = round($total/$perPage);
+        $result["info"] = [
+            "current_page" => (int) $page,
+            "per_page" => (int) $perPage,
+            "first_page" => 1,
+            "last_page" => $total/$perPage > $rounded ? $rounded + 1 : $rounded ,
+            "total" => $total,
+        ];
+        return $result;
+    }
+
+    protected function total()
+    {
+        return count(file($this->filePath));
     }
 }
