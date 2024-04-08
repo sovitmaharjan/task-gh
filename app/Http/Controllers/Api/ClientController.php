@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Services\ClientService;
+use App\Http\Requests\IndexRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\Client\ClientResource;
 use App\Http\Requests\Api\Client\ClientCreateRequest;
+use App\Http\Resources\Api\Client\ClientListResource;
 
 class ClientController extends Controller
 {
@@ -15,13 +17,13 @@ class ClientController extends Controller
     {
         $this->clientService = $clientService;
     }
-    
-    public function index()
+
+    public function index(IndexRequest $request)
     {
         $clients = $this->clientService->list();
-        return responseSuccess(ClientResource::collection($clients), 'Clients');
+        return responseSuccess(new ClientListResource($clients), 'Clients');
     }
-    
+
     public function store(ClientCreateRequest $request)
     {
         $data = $request->validated();

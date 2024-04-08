@@ -17,7 +17,7 @@ class BaseService
      * @var array
      */
     protected array $columns;
-    
+
     /**
      * Method __construct
      *
@@ -78,6 +78,18 @@ class BaseService
             $file = fopen($this->filePath, "w");
         } else {
             $file = fopen($this->filePath, "r");
+            if (request()->paginate == 1 || request()->page > 0) {
+                $perPage = request()->per_page ?? 10;
+                $page = request()->page ?? 1;
+                $offset = ($perPage * $page) - $perPage;
+                $count = 1;
+                while ($row = fgetcsv($file)) {
+                    if ($count > $offset && $count <= $perPage * $page) {
+                        $result[] = $this->makeAssoc($row, $this->columns);
+                    }
+                    $count++;
+                }
+            }
             while ($row = fgetcsv($file)) {
                 $result[] = $this->makeAssoc($row, $this->columns);
             }
