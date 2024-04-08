@@ -19,8 +19,7 @@ class ClientService extends BaseService
     {
         parent::__construct(
             storage_path('app/client.csv'),
-            ['id', 'name']
-            // ["id", "name", "gender", "phone", "email", "address", "nationality", "dob", "contact_mode", "created_at", "updated_at"]
+            ["id", "name", "gender", "phone", "email", "address", "nationality", "dob", "contact_mode", "created_at", "updated_at"]
         );
         $this->educationBackground = new EducationBackgroundService();
     }
